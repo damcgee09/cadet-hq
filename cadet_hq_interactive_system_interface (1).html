@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadet HQ - Gaston Fire & Rescue Cadets</title>
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cadet HQ">
+  <meta name="theme-color" content="#020617">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    
+    .bg-grid-pattern {
+      background-image: radial-gradient(rgba(239, 68, 68, 0.12) 1px, transparent 1px), radial-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      background-position: 0 0, 16px 16px;
+    }
+
+    .glow-card {
+      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.08);
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .bg-slate-900, .bg-slate-950 { background: white !important; border-color: #cbd5e1 !important; color: black !important; }
+      .text-white, .text-slate-100, .text-slate-200, .text-slate-300 { color: black !important; }
+      .text-slate-400, .text-slate-500 { color: #475569 !important; }
+      .border-slate-800, .border-slate-700 { border-color: #cbd5e1 !important; }
+      .shadow-xl, .shadow-2xl, .glow-card { box-shadow: none !important; }
+      .print-light-bg { background-color: #f8fafc !important; }
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col bg-grid-pattern selection:bg-red-500 selection:text-white">
+
+  <!-- TOP BAR / HEADER -->
+  <header class="bg-slate-900/95 backdrop-blur-2xl border-b border-slate-800/90 sticky top-0 z-30 shadow-2xl no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- BRANDING & LOGO -->
+      <div class="flex items-center gap-4">
+        <div class="relative group shrink-0 cursor-pointer" onclick="document.getElementById('logo-file-input').click()" title="Click to Upload Custom Station Logo">
+          <div class="absolute -inset-1.5 bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 rounded-2xl blur-md opacity-60 group-hover:opacity-100 transition duration-500 animate-pulse"></div>
+          <div class="relative w-16 h-16 bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-slate-700/80 group-hover:border-red-500 rounded-2xl flex flex-col items-center justify-center overflow-hidden p-1 shadow-2xl transition">
+            <img id="custom-header-logo" src="https://placehold.co/100x100/0f172a/EF4444?text=GFRC" alt="Gaston Fire & Rescue Badge" class="w-full h-full object-contain rounded-xl" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/EF4444?text=GFRC';">
+          </div>
+          <input type="file" id="logo-file-input" accept="image/*" class="hidden" onchange="window.handleLogoUpload(event)">
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight uppercase flex items-center gap-1.5 whitespace-nowrap">
+              <span class="text-white drop-shadow">Gaston</span>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-500 to-amber-500 font-black">Fire &amp; Rescue</span>
+              <span class="text-white drop-shadow">Cadets</span>
+            </h1>
+          </div>
+          <p class="text-xs text-slate-400 font-semibold flex items-center gap-2 mt-1">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Cadet HQ &amp; Live Cloud Roster
+          </p>
+        </div>
+      </div>
+
+      <!-- SYSTEM CONTROLS -->
+      <div class="flex items-center gap-2 flex-wrap justify-center">
+        <div id="cloud-sync-indicator" class="px-3 py-1.5 bg-emerald-950/80 text-emerald-300 text-xs font-bold rounded-xl border border-emerald-700/60 flex items-center gap-1.5 shadow">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Cloud Active
+        </div>
+        <button onclick="window.exportJSONBackup()" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-sky-400 text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-1.5 transition shadow">
+          <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-sky-400"></i> Export JSON
+        </button>
+        <label class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-emerald-400 text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-1.5 transition shadow cursor-pointer">
+          <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-400"></i> Import JSON
+          <input type="file" accept=".json" class="hidden" onchange="window.importJSONBackup(event)">
+        </label>
+        <button onclick="window.exportToCSV()" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-amber-400 text-xs font-bold rounded-xl border border-slate-700 flex items-center gap-1.5 transition shadow">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-amber-400"></i> Export CSV
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <div id="tab-roster" class="space-y-6">
+      
+      <!-- STATS OVERVIEW & ACTION GRID -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+        <!-- Active Cadets -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500"></div>
+          <div class="flex flex-col items-center justify-center text-center">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i> Total Cadets
+            </p>
+            <h3 id="stat-total" class="text-3xl font-black text-white mt-1">0</h3>
+          </div>
+        </div>
+
+        <!-- Full Cadets -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+          <div class="flex flex-col items-center justify-center text-center">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Full Cadet (&ge;6m)
+            </p>
+            <h3 id="stat-active" class="text-3xl font-black text-emerald-400 mt-1">0</h3>
+          </div>
+        </div>
+
+        <!-- Probation Cadet -->
+        <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i> Probation Cadet (&lt;6m)
+            </p>
+            <span id="stat-probation" class="text-lg font-black text-amber-400">0</span>
+          </div>
+          <div id="probation-cadets-list" class="mt-1.5 max-h-16 overflow-y-auto space-y-1 text-xs">
+            <span class="text-slate-500 italic text-[11px]">No cadets on probation</span>
+          </div>
+        </div>
+
+        <!-- New Entry Action Card -->
+        <div onclick="window.openAddCadetModal()" class="bg-gradient-to-br from-red-950/40 via-slate-900 to-amber-950/40 border border-red-800/50 hover:border-amber-500/80 p-4 rounded-2xl shadow-xl cursor-pointer transition transform active:scale-95 flex flex-col items-center justify-center text-center group">
+          <p class="text-[11px] font-black text-amber-400 uppercase tracking-wider">New Entry</p>
+          <div class="flex items-center gap-2 mt-1 text-white font-black text-lg group-hover:text-amber-300">
+            <i data-lucide="user-plus" class="w-5 h-5 text-amber-400"></i>
+            <span>+ Add Cadet</span>
+          </div>
+        </div>
+
+        <!-- Helmet Breakdown Bottom Bar -->
+        <div class="sm:col-span-2 lg:col-span-4 bg-slate-900/90 border border-slate-800 px-5 py-3 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="hard-hat" class="w-4 h-4 text-yellow-400"></i>
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Helmets Breakdown</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="stat-yellow-helmets" class="px-3 py-1 bg-yellow-950/80 border border-yellow-700/60 text-yellow-400 rounded-lg text-xs font-black">0 Yellow (13-15)</span>
+            <span id="stat-blue-helmets" class="px-3 py-1 bg-blue-950/80 border border-blue-700/60 text-blue-400 rounded-lg text-xs font-black">0 Blue (16-17)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLS & SEARCH BAR -->
+      <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col xl:flex-row items-center justify-between gap-3 no-print">
+        <div class="relative w-full xl:w-64 shrink-0">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="search-input" oninput="window.renderRoster()" placeholder="Search cadet name, ID, medical..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition shadow-inner">
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap w-full xl:w-auto justify-center">
+          <select id="sort-order" onchange="window.renderRoster()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="NAME_ASC">Sort: Name (A to Z)</option>
+            <option value="NAME_DESC">Sort: Name (Z to A)</option>
+            <option value="DATE_DESC">Sort: Newest Join Date</option>
+            <option value="DATE_ASC">Sort: Oldest Join Date</option>
+            <option value="AGE_ASC">Sort: Age (Youngest)</option>
+            <option value="AGE_DESC">Sort: Age (Oldest)</option>
+          </select>
+
+          <select id="filter-status" onchange="window.renderRoster()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="ACTIVE_ONLY">All Active Cadets</option>
+            <option value="PROBATION">On Probation (&lt; 6m)</option>
+            <option value="FULL">Off Probation (&ge; 6m)</option>
+          </select>
+
+          <select id="filter-helmet" onchange="window.renderRoster()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="ALL">All Helmet Colors</option>
+            <option value="Yellow">Yellow (13-15)</option>
+            <option value="Blue">Blue (16-17)</option>
+          </select>
+
+          <select id="filter-eligibility" onchange="window.renderRoster()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="ALL">All Rank Eligibility</option>
+            <option value="Captain">Eligible: Captain</option>
+            <option value="Lieutenant">Eligible: Lieutenant</option>
+            <option value="Secretary">Eligible: Secretary</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CADET CARDS GRID -->
+      <div id="roster-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+  </main>
+
+  <!-- MODAL: INDIVIDUAL CADET PROFILE SHEET -->
+  <div id="modal-cadet-sheet" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+      <div class="p-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between no-print sticky top-0 z-10 backdrop-blur">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-800/80">Cadet Profile Sheet</span>
+        <div class="flex items-center gap-2">
+          <button onclick="window.editCadetFromSheet()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg flex items-center gap-1.5 transition border border-slate-700">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-emerald-400"></i> Edit Details
+          </button>
+          <button onclick="window.print()" class="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow transition">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print / PDF
+          </button>
+          <button onclick="window.toggleModal('modal-cadet-sheet', false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="printable-sheet" class="p-6 md:p-8 space-y-6 bg-slate-900 text-slate-100 flex-1">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <h2 id="sheet-cadet-name" class="text-2xl font-black text-white tracking-tight">Cadet Name</h2>
+              <span id="sheet-cadet-id" class="text-xs font-mono font-bold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">CDT-ID</span>
+              <span id="sheet-probation-badge"></span>
+            </div>
+            <p id="sheet-contact-line" class="text-xs text-slate-400 mt-1">contact@example.com</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <div id="sheet-helmet-badge"></div>
+            <div id="sheet-agreement-badge"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 print-light-bg">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date of Birth / Age</p>
+            <p id="sheet-dob-age" class="text-sm font-bold text-slate-200 mt-1">-</p>
+          </div>
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 print-light-bg">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Duration</p>
+            <p id="sheet-service-time" class="text-sm font-bold text-emerald-400 mt-1">-</p>
+          </div>
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 print-light-bg">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Uniform Sizes</p>
+            <p id="sheet-uniform-sizes" class="text-sm font-bold text-indigo-300 mt-1">-</p>
+          </div>
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 print-light-bg">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Physical Measurements</p>
+            <p id="sheet-height-weight" class="text-xs font-semibold text-slate-300 mt-1">-</p>
+          </div>
+        </div>
+
+        <div class="p-4 bg-rose-950/30 border border-rose-900/50 rounded-xl space-y-1 text-xs print-light-bg">
+          <p class="font-bold text-rose-400 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+            <i data-lucide="heart-pulse" class="w-4 h-4"></i> Emergency Contacts &amp; Medical Alerts
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1 text-slate-300">
+            <div>
+              <span class="text-slate-400 font-medium">Primary:</span>
+              <span id="sheet-emergency-1" class="font-semibold text-white ml-1">None</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Secondary:</span>
+              <span id="sheet-emergency-2" class="font-semibold text-white ml-1">None</span>
+            </div>
+            <div class="md:col-span-2">
+              <span class="text-slate-400 font-medium">Medical / Allergies:</span>
+              <span id="sheet-medical-alerts" class="font-bold text-amber-400 ml-1">None Listed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3 print-light-bg">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <i data-lucide="award" class="w-4 h-4"></i> Officer Rank Eligibility Status
+          </h4>
+          <div id="sheet-rank-eligibility-list" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> Course &amp; Physical Qualification Audit
+          </h4>
+          <div id="sheet-quals-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+        </div>
+
+        <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-1 print-light-bg">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed &amp; Passed Classes</p>
+          <p id="sheet-classes-list" class="text-xs font-medium text-slate-200 mt-1">None logged.</p>
+        </div>
+
+        <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3 print-light-bg">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+              <i data-lucide="notebook" class="w-4 h-4"></i> Cadet Logbook &amp; Notes History
+            </h4>
+            <span id="sheet-notes-count" class="text-[10px] font-mono font-bold bg-slate-800 text-sky-400 px-2 py-0.5 rounded border border-slate-700">0 Notes</span>
+          </div>
+
+          <div class="no-print bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2">
+            <div class="flex flex-col sm:flex-row items-center gap-2">
+              <select id="sheet-new-note-type" class="w-full sm:w-36 bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-500">
+                <option value="General">General</option>
+                <option value="Commendation">Commendation</option>
+                <option value="Performance">Performance</option>
+                <option value="Disciplinary">Disciplinary</option>
+              </select>
+              <input type="text" id="sheet-new-note-input" placeholder="Type a new note/remark for this cadet..." class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-100 rounded-lg px-3 py-1.5 focus:outline-none focus:border-sky-500 flex-1">
+              <button onclick="window.addCadetNoteFromSheet()" class="w-full sm:w-auto px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow transition flex items-center justify-center gap-1 shrink-0">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Note
+              </button>
+            </div>
+          </div>
+
+          <div id="sheet-notes-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT CADET MODAL -->
+  <div id="modal-add-cadet" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
+        <h3 id="modal-cadet-title" class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-5 h-5 text-emerald-400"></i> Add New Cadet Profile
+        </h3>
+        <button onclick="window.toggleModal('modal-add-cadet', false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <form onsubmit="window.saveCadetForm(event)" class="p-6 space-y-6 flex-1">
+        <input type="hidden" id="editing-cadet-id" value="">
+        
+        <!-- Basic Details -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5"></i> Basic Details
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+              <input type="text" id="input-name" required placeholder="e.g. Alex Rivera" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Cadet ID</label>
+              <input type="text" id="input-id" required placeholder="CDT-1001" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Date of Birth</label>
+              <input type="date" id="input-dob" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 cursor-pointer">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Join Date (Service Start)</label>
+              <input type="date" id="input-date" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Cadet Contact Info (Email / Phone)</label>
+              <input type="text" id="input-contact" placeholder="alex.r@example.com | (555) 000-1111" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency Contacts & Medical Alerts -->
+        <div class="space-y-3 pt-3 border-t border-slate-800">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+            <i data-lucide="heart-pulse" class="w-3.5 h-3.5"></i> Emergency Contacts &amp; Medical Alerts
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Primary Emergency Contact</label>
+              <input type="text" id="input-emergency" placeholder="Parent Name - (555) 123-4567" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Secondary Emergency Contact</label>
+              <input type="text" id="input-emergency-2" placeholder="Guardian Name - (555) 987-6543" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-medium text-slate-300 mb-1">Medical Conditions, Allergies &amp; Alerts</label>
+              <input type="text" id="input-medical" placeholder="e.g. Asthma (Inhaler in gear bag), Penicillin allergy" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-rose-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Physical Measurements & Uniform Sizes -->
+        <div class="space-y-3 pt-3 border-t border-slate-800">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+            <i data-lucide="ruler" class="w-3.5 h-3.5"></i> Physical Measurements &amp; Uniform Sizing
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Height (inches)</label>
+              <input type="number" id="input-height" oninput="window.calculateUniformSizesFromInputs()" placeholder="68" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Weight (lbs)</label>
+              <input type="number" id="input-weight" oninput="window.calculateUniformSizesFromInputs()" placeholder="150" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Shirt Size</label>
+              <input type="text" id="input-shirt-size" placeholder="Medium" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Pant Size</label>
+              <input type="text" id="input-pant-size" placeholder="30x32" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Qualifications & Requirements Checkboxes -->
+        <div class="space-y-3 pt-3 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Officer Qualifications &amp; Physical Audits
+            </h4>
+            <button type="button" onclick="window.promptAddNewQual()" class="px-2.5 py-1 bg-amber-950/80 hover:bg-amber-900 text-amber-300 text-[11px] font-bold rounded-lg border border-amber-700/60 flex items-center gap-1 transition">
+              <i data-lucide="plus" class="w-3 h-3"></i> Add Custom Qual
+            </button>
+          </div>
+          <div id="quals-checkboxes-container" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-300">
+            <!-- Dynamic qualifications list will be generated here -->
+          </div>
+        </div>
+
+        <!-- Classes & Notes -->
+        <div class="space-y-3 pt-3 border-t border-slate-800">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+            <i data-lucide="book-open" class="w-3.5 h-3.5"></i> Training Classes &amp; Initial Log Note
+          </h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Completed &amp; Passed Classes</label>
+              <input type="text" id="input-classes" placeholder="Orientation I, Basic Fire Behavior, CPR / AED" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Note Category</label>
+                <select id="input-initial-note-category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                  <option value="General">General</option>
+                  <option value="Commendation">Commendation</option>
+                  <option value="Performance">Performance</option>
+                  <option value="Disciplinary">Disciplinary</option>
+                </select>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-slate-300 mb-1">Add Log Note / Remark (Optional)</label>
+                <input type="text" id="input-initial-note-text" placeholder="Type initial cadet observation or remark..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500">
+              </div>
+            </div>
+            <div class="flex items-center gap-4 pt-1">
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="input-agreement-signed" class="rounded accent-emerald-500"> Cadet Agreement Signed
+              </label>
+              <input type="url" id="input-agreement-link" placeholder="Agreement document link URL..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-800">
+          <button type="button" onclick="window.toggleModal('modal-add-cadet', false)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow transition">Save Cadet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const DEFAULT_RANK_RULES = {
+      Captain: { minAge: 16, minMonths: 12, quals: ["fdRec", "ffPpe", "hazmat", "ropes", "trvr", "emc", "cpat", "liveBurn", "pftPass"] },
+      Lieutenant: { minAge: 15, minMonths: 6, quals: ["fdRec", "ffPpe", "hazmat", "pftPass"] },
+      Secretary: { minAge: 14, minMonths: 6, quals: ["fdRec"] }
+    };
+
+    let customQualDict = {
+      fdRec: "FD Recommendation Form",
+      ffPpe: "Firefighter PPE Passed",
+      hazmat: "HAZMAT Certified",
+      ropes: "Ropes Qualification",
+      trvr: "TRVR Extrication",
+      emc: "Emergency Medical Care",
+      cpat: "CPAT (<5 min)",
+      liveBurn: "Live Burn Passed",
+      pftPass: "Physical Fitness Pass"
+    };
+
+    let cadets = [];
+    let rankRules = { ...DEFAULT_RANK_RULES };
+    let activeSheetCadetId = null;
+    let db = null;
+    let auth = null;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+    // Universal Multi-Tab & Multi-Window Sync (Cross-Browser Channel)
+    const syncChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('gfrc_hq_sync') : null;
+    if (syncChannel) {
+      syncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'SYNC_DATA') {
+          loadStateFromStorage();
+          window.renderRoster();
+        }
+      };
+    }
+
+    // Storage Event Fallback for Older Browsers / OS Types
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'gfr_cadets' || event.key === 'gfr_custom_quals') {
+        loadStateFromStorage();
+        window.renderRoster();
+      }
+    });
+
+    // Cross-Platform Firestore Cloud Database Connection
+    async function initCloudDatabase() {
+      try {
+        if (typeof __firebase_config !== 'undefined') {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          const app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+          auth = getAuth(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cadets', 'roster');
+          onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().data) {
+              cadets = docSnap.data().data;
+              if (docSnap.data().qualsDict) {
+                customQualDict = { ...customQualDict, ...docSnap.data().qualsDict };
+              }
+              localStorage.setItem('gfr_cadets', JSON.stringify(cadets));
+              localStorage.setItem('gfr_custom_quals', JSON.stringify(customQualDict));
+              window.renderRoster();
+            }
+          }, (err) => {
+            console.warn("Cloud snapshot notice:", err);
+          });
+        }
+      } catch (err) {
+        console.warn("Local storage fallback active across system platforms:", err);
+      }
+    }
+
+    function calculateAge(dobString) {
+      if (!dobString) return 0;
+      const dob = new Date(dobString);
+      const diff = Date.now() - dob.getTime();
+      const ageDate = new Date(diff);
+      return Math.abs(ageDate.getUTCFullYear() - 1970);
+    }
+
+    function calculateServiceMonths(joinDateString) {
+      if (!joinDateString) return 0;
+      const join = new Date(joinDateString);
+      const now = new Date();
+      return (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
+    }
+
+    function getHelmetColor(age) {
+      if (age >= 13 && age <= 15) return "Yellow";
+      if (age >= 16 && age <= 17) return "Blue";
+      return "White / Standard";
+    }
+
+    function checkEligibility(cadet, rankKey) {
+      const rule = rankRules[rankKey];
+      if (!rule) return false;
+      const age = calculateAge(cadet.dob);
+      const months = calculateServiceMonths(cadet.joinDate);
+      if (age < rule.minAge || months < rule.minMonths) return false;
+      for (let q of rule.quals) {
+        if (!cadet.quals || !cadet.quals[q]) return false;
+      }
+      return true;
+    }
+
+    function generateNextCadetId() {
+      const num = Math.floor(1000 + Math.random() * 9000);
+      return `CDT-${num}`;
+    }
+
+    window.calculateUniformSizesFromInputs = function calculateUniformSizesFromInputs() {
+      const h = parseFloat(document.getElementById('input-height').value);
+      const w = parseFloat(document.getElementById('input-weight').value);
+      if (h && w) {
+        let shirt = "Medium";
+        if (w < 130) shirt = "Small";
+        else if (w > 180) shirt = "Large";
+        else if (w > 220) shirt = "X-Large";
+        const waist = Math.round(w / 5) + 2;
+        const inseam = Math.round(h * 0.45);
+        if (!document.getElementById('input-shirt-size').value) document.getElementById('input-shirt-size').value = shirt;
+        if (!document.getElementById('input-pant-size').value) document.getElementById('input-pant-size').value = `${waist}x${inseam}`;
+      }
+    };
+
+    function loadStateFromStorage() {
+      const savedCadets = localStorage.getItem('gfr_cadets');
+      cadets = savedCadets ? JSON.parse(savedCadets) : [];
+      const savedQuals = localStorage.getItem('gfr_custom_quals');
+      if (savedQuals) {
+        try { customQualDict = { ...customQualDict, ...JSON.parse(savedQuals) }; } catch(e){}
+      }
+      const savedLogo = localStorage.getItem('gfr_custom_logo');
+      if (savedLogo && document.getElementById('custom-header-logo')) {
+        document.getElementById('custom-header-logo').src = savedLogo;
+      }
+    }
+
+    async function saveStateToStorage() {
+      localStorage.setItem('gfr_cadets', JSON.stringify(cadets));
+      localStorage.setItem('gfr_custom_quals', JSON.stringify(customQualDict));
+      if (db && auth && auth.currentUser) {
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'cadets', 'roster');
+          await setDoc(docRef, { data: cadets, qualsDict: customQualDict, updatedAt: new Date().toISOString() });
+        } catch (e) {
+          console.error("Cloud Save Notice:", e);
+        }
+      }
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'SYNC_DATA', timestamp: Date.now() });
+      }
+    }
+
+    window.promptAddNewQual = function promptAddNewQual() {
+      const qualName = prompt("Enter the name of the new Officer Qualification or Physical Audit:");
+      if (qualName && qualName.trim()) {
+        const cleanName = qualName.trim();
+        const qualKey = "custom_" + cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        customQualDict[qualKey] = cleanName;
+        saveStateToStorage();
+        renderQualCheckboxes({});
+      }
+    };
+
+    function renderQualCheckboxes(selectedQuals = {}) {
+      const container = document.getElementById('quals-checkboxes-container');
+      if (!container) return;
+
+      container.innerHTML = Object.keys(customQualDict).map(qKey => {
+        const isChecked = !!selectedQuals[qKey];
+        return `
+          <label class="flex items-center justify-between p-2 bg-slate-950 border border-slate-800 rounded-lg cursor-pointer hover:border-amber-500/50 touch-manipulation">
+            <span class="flex items-center gap-2 truncate pr-1">
+              <input type="checkbox" id="qual-${qKey}" data-qual-key="${qKey}" ${isChecked ? 'checked' : ''} class="qual-checkbox rounded accent-amber-500 w-4 h-4">
+              <span class="truncate">${customQualDict[qKey]}</span>
+            </span>
+            <button type="button" onclick="window.deleteCustomQual('${qKey}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded shrink-0" title="Delete Qualification">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </label>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    window.deleteCustomQual = function deleteCustomQual(qKey, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      delete customQualDict[qKey];
+      saveStateToStorage();
+      renderQualCheckboxes();
+    };
+
+    window.openAddCadetModal = function openAddCadetModal(cadetToEdit = null) {
+      const isEdit = !!cadetToEdit;
+      const titleEl = document.getElementById('modal-cadet-title');
+      if (titleEl) {
+        titleEl.innerHTML = `
+          <i data-lucide="${isEdit ? 'edit-3' : 'user-plus'}" class="w-5 h-5 text-emerald-400"></i> ${isEdit ? 'Edit Cadet Profile' : 'Add New Cadet Profile'}
+        `;
+      }
+
+      document.getElementById('editing-cadet-id').value = isEdit ? cadetToEdit.id : '';
+      document.getElementById('input-name').value = isEdit ? cadetToEdit.name : '';
+      document.getElementById('input-id').value = isEdit ? cadetToEdit.id : generateNextCadetId();
+      document.getElementById('input-dob').value = isEdit ? (cadetToEdit.dob || '') : '';
+      document.getElementById('input-date').value = isEdit ? (cadetToEdit.joinDate || '') : new Date().toISOString().split('T')[0];
+      document.getElementById('input-contact').value = isEdit ? (cadetToEdit.contact || '') : '';
+
+      document.getElementById('input-emergency').value = isEdit ? (cadetToEdit.emergency1 || '') : '';
+      document.getElementById('input-emergency-2').value = isEdit ? (cadetToEdit.emergency2 || '') : '';
+      document.getElementById('input-medical').value = isEdit ? (cadetToEdit.medical || '') : '';
+
+      document.getElementById('input-height').value = isEdit ? (cadetToEdit.height || '') : '';
+      document.getElementById('input-weight').value = isEdit ? (cadetToEdit.weight || '') : '';
+      document.getElementById('input-shirt-size').value = isEdit ? (cadetToEdit.shirtSize || '') : '';
+      document.getElementById('input-pant-size').value = isEdit ? (cadetToEdit.pantSize || '') : '';
+
+      document.getElementById('input-classes').value = isEdit ? (cadetToEdit.classes || '') : '';
+      document.getElementById('input-agreement-signed').checked = isEdit ? !!cadetToEdit.agreementSigned : false;
+      document.getElementById('input-agreement-link').value = isEdit ? (cadetToEdit.agreementLink || '') : '';
+
+      const q = isEdit ? (cadetToEdit.quals || {}) : {};
+      renderQualCheckboxes(q);
+
+      document.getElementById('input-initial-note-category').value = 'General';
+      document.getElementById('input-initial-note-text').value = '';
+
+      window.toggleModal('modal-add-cadet', true);
+      if (window.lucide) lucide.createIcons();
+    };
+
+    window.saveCadetForm = function saveCadetForm(event) {
+      event.preventDefault();
+
+      const editingId = document.getElementById('editing-cadet-id').value;
+      const existingCadet = editingId ? cadets.find(c => c.id === editingId) : null;
+      let existingNotes = existingCadet ? (existingCadet.notes || []) : [];
+
+      const initialNoteText = (document.getElementById('input-initial-note-text')?.value || '').trim();
+      const initialNoteCategory = document.getElementById('input-initial-note-category')?.value || 'General';
+
+      if (initialNoteText) {
+        const now = new Date();
+        const timestamp = `${now.toISOString().split('T')[0]} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        existingNotes.unshift({
+          id: `note-${Date.now()}`,
+          timestamp: timestamp,
+          type: initialNoteCategory,
+          text: initialNoteText
+        });
+      }
+
+      const qualsObj = {};
+      document.querySelectorAll('.qual-checkbox').forEach(cb => {
+        const key = cb.getAttribute('data-qual-key');
+        if (key) qualsObj[key] = cb.checked;
+      });
+
+      const cadetData = {
+        id: (document.getElementById('input-id')?.value || generateNextCadetId()).trim(),
+        name: (document.getElementById('input-name')?.value || '').trim(),
+        dob: document.getElementById('input-dob')?.value || '',
+        joinDate: document.getElementById('input-date')?.value || new Date().toISOString().split('T')[0],
+        contact: (document.getElementById('input-contact')?.value || '').trim(),
+        emergency1: (document.getElementById('input-emergency')?.value || '').trim(),
+        emergency2: (document.getElementById('input-emergency-2')?.value || '').trim(),
+        medical: (document.getElementById('input-medical')?.value || '').trim(),
+        height: parseFloat(document.getElementById('input-height')?.value) || 0,
+        weight: parseFloat(document.getElementById('input-weight')?.value) || 0,
+        shirtSize: (document.getElementById('input-shirt-size')?.value || '').trim(),
+        pantSize: (document.getElementById('input-pant-size')?.value || '').trim(),
+        classes: (document.getElementById('input-classes')?.value || '').trim(),
+        agreementSigned: document.getElementById('input-agreement-signed')?.checked || false,
+        agreementLink: (document.getElementById('input-agreement-link')?.value || '').trim(),
+        quals: qualsObj,
+        notes: existingNotes
+      };
+
+      if (!cadetData.name) return;
+
+      if (editingId) {
+        const idx = cadets.findIndex(c => c.id === editingId);
+        if (idx !== -1) cadets[idx] = cadetData;
+        else cadets.push(cadetData);
+      } else {
+        cadets.push(cadetData);
+      }
+
+      saveStateToStorage();
+      window.renderRoster();
+      window.toggleModal('modal-add-cadet', false);
+    };
+
+    window.deleteCadet = function deleteCadet(cadetId) {
+      if (!confirm("Are you sure you want to delete this cadet profile?")) return;
+      cadets = cadets.filter(c => c.id !== cadetId);
+      saveStateToStorage();
+      window.renderRoster();
+    };
+
+    window.renderRoster = function renderRoster() {
+      const container = document.getElementById('roster-container');
+      if (!container) return;
+
+      const searchInput = document.getElementById('search-input');
+      const search = searchInput ? searchInput.value.toLowerCase() : '';
+      const sort = document.getElementById('sort-order')?.value || 'NAME_ASC';
+      const filterStatus = document.getElementById('filter-status')?.value || 'ACTIVE_ONLY';
+      const filterHelmet = document.getElementById('filter-helmet')?.value || 'ALL';
+      const filterEligibility = document.getElementById('filter-eligibility')?.value || 'ALL';
+
+      let filtered = cadets.filter(c => {
+        const matchesSearch = c.name.toLowerCase().includes(search) ||
+                              c.id.toLowerCase().includes(search) ||
+                              (c.medical && c.medical.toLowerCase().includes(search));
+
+        const months = calculateServiceMonths(c.joinDate);
+        const isProbation = months < 6;
+
+        let matchesStatus = true;
+        if (filterStatus === "PROBATION") matchesStatus = isProbation;
+        if (filterStatus === "FULL") matchesStatus = !isProbation;
+
+        const age = calculateAge(c.dob);
+        const helmet = getHelmetColor(age);
+        let matchesHelmet = true;
+        if (filterHelmet !== "ALL") matchesHelmet = (helmet === filterHelmet);
+
+        let matchesEligibility = true;
+        if (filterEligibility !== "ALL") {
+          matchesEligibility = checkEligibility(c, filterEligibility);
+        }
+
+        return matchesSearch && matchesStatus && matchesHelmet && matchesEligibility;
+      });
+
+      filtered.sort((a, b) => {
+        if (sort === "NAME_ASC") return a.name.localeCompare(b.name);
+        if (sort === "NAME_DESC") return b.name.localeCompare(a.name);
+        if (sort === "DATE_DESC") return new Date(b.joinDate) - new Date(a.joinDate);
+        if (sort === "DATE_ASC") return new Date(a.joinDate) - new Date(b.joinDate);
+        if (sort === "AGE_ASC") return calculateAge(a.dob) - calculateAge(b.dob);
+        if (sort === "AGE_DESC") return calculateAge(b.dob) - calculateAge(a.dob);
+        return 0;
+      });
+
+      let probationCadets = [];
+      let activeCount = 0;
+      let yellowHelmets = 0;
+      let blueHelmets = 0;
+
+      cadets.forEach(c => {
+        const m = calculateServiceMonths(c.joinDate);
+        if (m < 6) probationCadets.push(c);
+        else activeCount++;
+
+        const age = calculateAge(c.dob);
+        const h = getHelmetColor(age);
+        if (h === "Yellow") yellowHelmets++;
+        if (h === "Blue") blueHelmets++;
+      });
+
+      const elTotal = document.getElementById('stat-total');
+      if (elTotal) elTotal.innerText = cadets.length;
+
+      const elProbation = document.getElementById('stat-probation');
+      if (elProbation) elProbation.innerText = probationCadets.length;
+
+      const elActive = document.getElementById('stat-active');
+      if (elActive) elActive.innerText = activeCount;
+
+      const elYellow = document.getElementById('stat-yellow-helmets');
+      if (elYellow) elYellow.innerText = `${yellowHelmets} Yellow (13-15)`;
+
+      const elBlue = document.getElementById('stat-blue-helmets');
+      if (elBlue) elBlue.innerText = `${blueHelmets} Blue (16-17)`;
+
+      const probationListContainer = document.getElementById('probation-cadets-list');
+      if (probationListContainer) {
+        if (probationCadets.length === 0) {
+          probationListContainer.innerHTML = `<span class="text-slate-500 italic text-[11px]">No cadets on probation</span>`;
+        } else {
+          probationListContainer.innerHTML = probationCadets.map(c => `
+            <div onclick="window.openCadetSheet('${c.id}')" class="flex items-center justify-between p-1 hover:bg-slate-800/60 rounded cursor-pointer transition">
+              <span class="font-bold text-amber-300 truncate">${c.name}</span>
+              <span class="text-[10px] font-mono text-slate-400 shrink-0 ml-1">${c.id}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-500 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <i data-lucide="users" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+            <p class="text-sm font-semibold">No cadet records matched your search filters.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filtered.map(c => {
+        const age = calculateAge(c.dob);
+        const months = calculateServiceMonths(c.joinDate);
+        const isProbation = months < 6;
+        const helmet = getHelmetColor(age);
+
+        const capElig = checkEligibility(c, "Captain");
+        const ltElig = checkEligibility(c, "Lieutenant");
+        const secElig = checkEligibility(c, "Secretary");
+
+        return `
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl hover:border-slate-700 transition flex flex-col justify-between space-y-4 glow-card">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="font-black text-base text-white hover:text-emerald-400 cursor-pointer transition" onclick="window.openCadetSheet('${c.id}')">${c.name}</h3>
+                  <p class="text-[11px] font-mono font-semibold text-slate-400 mt-0.5">${c.id}</p>
+                </div>
+                <span class="px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${isProbation ? 'bg-amber-950/80 text-amber-400 border border-amber-800/80' : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'}">
+                  ${isProbation ? 'Probation' : 'Full Cadet'}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs text-slate-300 pt-2 border-t border-slate-800/80">
+                <div>
+                  <span class="text-slate-500 text-[10px] block font-bold uppercase">Age / DOB</span>
+                  <span class="font-semibold">${age} yrs (${c.dob || 'N/A'})</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 text-[10px] block font-bold uppercase">Service</span>
+                  <span class="font-semibold text-emerald-400">${months} months</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 text-[10px] block font-bold uppercase">Helmet Color</span>
+                  <span class="font-bold ${helmet === 'Yellow' ? 'text-yellow-400' : helmet === 'Blue' ? 'text-blue-400' : 'text-slate-200'}">${helmet}</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 text-[10px] block font-bold uppercase">Agreement</span>
+                  <span class="font-semibold ${c.agreementSigned ? 'text-indigo-400' : 'text-rose-400'}">${c.agreementSigned ? 'Signed' : 'Pending'}</span>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-slate-800/80 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] text-slate-500 font-bold uppercase mr-1">Rank Eligible:</span>
+                ${capElig ? '<span class="px-1.5 py-0.5 bg-amber-950/80 text-amber-400 rounded text-[10px] font-bold border border-amber-800/80">Captain</span>' : ''}
+                ${ltElig ? '<span class="px-1.5 py-0.5 bg-sky-950/80 text-sky-400 rounded text-[10px] font-bold border border-sky-800/80">LT</span>' : ''}
+                ${secElig ? '<span class="px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 rounded text-[10px] font-bold border border-emerald-800/80">Sec</span>' : ''}
+                ${(!capElig && !ltElig && !secElig) ? '<span class="text-[10px] text-slate-500 italic">None yet</span>' : ''}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+              <button onclick="window.openCadetSheet('${c.id}')" class="flex-1 py-1.5 bg-slate-950 hover:bg-slate-800 text-emerald-400 text-xs font-bold rounded-xl border border-slate-800 transition flex items-center justify-center gap-1">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Profile Sheet
+              </button>
+              <button onclick="window.deleteCadet('${c.id}')" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg transition" title="Delete Cadet">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    };
+
+    window.openCadetSheet = function openCadetSheet(cadetId) {
+      const cadet = cadets.find(c => c.id === cadetId);
+      if (!cadet) return;
+
+      activeSheetCadetId = cadetId;
+      const age = calculateAge(cadet.dob);
+      const months = calculateServiceMonths(cadet.joinDate);
+      const isProbation = months < 6;
+      const helmet = getHelmetColor(age);
+
+      document.getElementById('sheet-cadet-name').innerText = cadet.name;
+      document.getElementById('sheet-cadet-id').innerText = cadet.id;
+      document.getElementById('sheet-contact-line').innerText = cadet.contact || "No contact info provided";
+
+      document.getElementById('sheet-probation-badge').innerHTML = `
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${isProbation ? 'bg-amber-950/80 text-amber-400 border border-amber-800/80' : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'}">
+          ${isProbation ? 'Probation (<6m)' : 'Full Cadet (≥6m)'}
+        </span>
+      `;
+
+      document.getElementById('sheet-helmet-badge').innerHTML = `
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${helmet === 'Yellow' ? 'bg-yellow-950/80 text-yellow-400 border border-yellow-800/80' : 'bg-blue-950/80 text-blue-400 border border-blue-800/80'}">
+          ${helmet} Helmet (Age ${age})
+        </span>
+      `;
+
+      document.getElementById('sheet-agreement-badge').innerHTML = `
+        <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${cadet.agreementSigned ? 'bg-indigo-950/80 text-indigo-400 border border-indigo-800/80' : 'bg-rose-950/80 text-rose-400 border border-rose-800/80'}">
+          ${cadet.agreementSigned ? 'Agreement Signed' : 'Agreement Missing'}
+        </span>
+      `;
+
+      document.getElementById('sheet-dob-age').innerText = `${cadet.dob || 'N/A'} (${age} years old)`;
+      document.getElementById('sheet-service-time').innerText = `${months} Months Active Service`;
+      document.getElementById('sheet-uniform-sizes').innerText = `Shirt: ${cadet.shirtSize || 'N/A'} | Pant: ${cadet.pantSize || 'N/A'}`;
+      document.getElementById('sheet-height-weight').innerText = `${cadet.height || '-'} in / ${cadet.weight || '-'} lbs`;
+
+      document.getElementById('sheet-emergency-1').innerText = cadet.emergency1 || 'None Listed';
+      document.getElementById('sheet-emergency-2').innerText = cadet.emergency2 || 'None Listed';
+      document.getElementById('sheet-medical-alerts').innerText = cadet.medical || 'No medical alerts or allergies noted.';
+
+      const ranks = [
+        { name: "Cadet Captain", key: "Captain" },
+        { name: "Cadet Lieutenant", key: "Lieutenant" },
+        { name: "Cadet Secretary", key: "Secretary" }
+      ];
+
+      document.getElementById('sheet-rank-eligibility-list').innerHTML = ranks.map(r => {
+        const eligible = checkEligibility(cadet, r.key);
+        return `
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
+            <span class="font-bold text-slate-200">${r.name}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${eligible ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
+              ${eligible ? 'QUALIFIED' : 'INELIGIBLE'}
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sheet-quals-grid').innerHTML = Object.keys(customQualDict).map(qKey => {
+        const passed = cadet.quals && cadet.quals[qKey];
+        return `
+          <div class="p-2.5 bg-slate-950/60 rounded-lg border border-slate-800/80 flex items-center gap-2 text-xs print-light-bg">
+            <i data-lucide="${passed ? 'check-circle-2' : 'x-circle'}" class="w-4 h-4 ${passed ? 'text-emerald-400' : 'text-slate-600'}"></i>
+            <span class="${passed ? 'text-slate-200 font-semibold' : 'text-slate-500'}">${customQualDict[qKey]}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sheet-classes-list').innerText = cadet.classes || "No classes currently logged.";
+
+      renderCadetSheetNotes(cadet);
+      window.toggleModal('modal-cadet-sheet', true);
+      if (window.lucide) lucide.createIcons();
+    };
+
+    function renderCadetSheetNotes(cadet) {
+      const notesList = cadet.notes || [];
+      document.getElementById('sheet-notes-count').innerText = `${notesList.length} ${notesList.length === 1 ? 'Note' : 'Notes'}`;
+      
+      const container = document.getElementById('sheet-notes-list');
+      if (notesList.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 italic text-xs py-2">No notes recorded for this cadet.</p>`;
+        return;
+      }
+
+      const getNoteTypeBadge = (type) => {
+        if (type === 'Commendation') return 'bg-emerald-950/80 text-emerald-400 border-emerald-800';
+        if (type === 'Disciplinary') return 'bg-rose-950/80 text-rose-400 border-rose-800';
+        if (type === 'Performance') return 'bg-amber-950/80 text-amber-400 border-amber-800';
+        return 'bg-sky-950/80 text-sky-400 border-sky-800';
+      };
+
+      container.innerHTML = notesList.map(note => `
+        <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg flex items-start justify-between gap-2 print-light-bg">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded border ${getNoteTypeBadge(note.type)}">${note.type}</span>
+              <span class="text-[10px] font-mono text-slate-500">${note.timestamp}</span>
+            </div>
+            <p class="text-xs text-slate-200 leading-relaxed">${note.text}</p>
+          </div>
+          <button onclick="window.deleteCadetNote('${cadet.id}', '${note.id}')" class="no-print p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 rounded transition shrink-0" title="Delete Note">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.addCadetNoteFromSheet = function addCadetNoteFromSheet() {
+      const textInput = document.getElementById('sheet-new-note-input');
+      const typeSelect = document.getElementById('sheet-new-note-type');
+      const noteText = textInput.value.trim();
+      const noteType = typeSelect.value;
+
+      if (!noteText || !activeSheetCadetId) return;
+
+      const cadet = cadets.find(c => c.id === activeSheetCadetId);
+      if (!cadet) return;
+
+      if (!cadet.notes) cadet.notes = [];
+
+      const now = new Date();
+      const timestamp = `${now.toISOString().split('T')[0]} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      cadet.notes.unshift({
+        id: `note-${Date.now()}`,
+        timestamp: timestamp,
+        type: noteType,
+        text: noteText
+      });
+
+      saveStateToStorage();
+      renderCadetSheetNotes(cadet);
+      textInput.value = '';
+      if (window.lucide) lucide.createIcons();
+    };
+
+    window.deleteCadetNote = function deleteCadetNote(cadetId, noteId) {
+      const cadet = cadets.find(c => c.id === cadetId);
+      if (!cadet || !cadet.notes) return;
+
+      cadet.notes = cadet.notes.filter(n => n.id !== noteId);
+      saveStateToStorage();
+      renderCadetSheetNotes(cadet);
+      if (window.lucide) lucide.createIcons();
+    };
+
+    window.editCadetFromSheet = function editCadetFromSheet() {
+      const cadet = cadets.find(c => c.id === activeSheetCadetId);
+      if (cadet) {
+        window.toggleModal('modal-cadet-sheet', false);
+        window.openAddCadetModal(cadet);
+      }
+    };
+
+    window.handleLogoUpload = function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const dataUrl = e.target.result;
+          document.getElementById('custom-header-logo').src = dataUrl;
+          localStorage.setItem('gfr_custom_logo', dataUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    window.exportJSONBackup = function exportJSONBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cadets, null, 2));
+      const link = document.createElement('a');
+      link.href = dataStr;
+      link.download = `GFRC_Cadet_Roster_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    window.importJSONBackup = function importJSONBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            cadets = parsed;
+            saveStateToStorage();
+            window.renderRoster();
+          }
+        } catch (err) {
+          console.error("Invalid JSON file:", err);
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    window.exportToCSV = function exportToCSV() {
+      if (cadets.length === 0) return;
+      const headers = ["Cadet ID", "Full Name", "DOB", "Age", "Join Date", "Service Months", "Helmet Color", "Contact", "Emergency Contact 1", "Emergency Contact 2", "Medical Alerts", "Shirt Size", "Pant Size", "Agreement Signed", "Notes Summary"];
+      const rows = cadets.map(c => {
+        const notesSummary = (c.notes || []).map(n => `[${n.timestamp} | ${n.type}] ${n.text}`).join(' // ');
+        return [
+          `"${c.id}"`,
+          `"${c.name}"`,
+          `"${c.dob}"`,
+          calculateAge(c.dob),
+          `"${c.joinDate}"`,
+          calculateServiceMonths(c.joinDate),
+          `"${getHelmetColor(calculateAge(c.dob))}"`,
+          `"${c.contact || ''}"`,
+          `"${c.emergency1 || ''}"`,
+          `"${c.emergency2 || ''}"`,
+          `"${c.medical || ''}"`,
+          `"${c.shirtSize || ''}"`,
+          `"${c.pantSize || ''}"`,
+          c.agreementSigned ? "Yes" : "No",
+          `"${notesSummary}"`
+        ];
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Gaston_Cadet_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    window.toggleModal = function toggleModal(modalId, show) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        if (show) modal.classList.remove('hidden');
+        else modal.classList.add('hidden');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStateFromStorage();
+      window.renderRoster();
+      initCloudDatabase();
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
